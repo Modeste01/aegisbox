@@ -86,7 +86,13 @@ python3 app.py
 
 The web console will be available at http://localhost:8000.
 
-### Deployment on Vultr VM using Docker
+### Deployment on Vultr Cloud Compute
+
+Live Instance:
+* Region: Atlanta, US
+* Plan: Standard Cloud Compute (vc2-2c-2gb, 2 vCPU / 2 GB RAM)
+* Public IP: 144.202.31.205
+* Application URL: http://144.202.31.205:8000
 
 ```bash
 docker compose up -d
