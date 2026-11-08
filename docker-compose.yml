@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  aegisbox:
+    build: .
+    container_name: aegisbox-runner
+    ports:
+      - "8000:8000"
+    environment:
+      - VULTR_API_KEY=${VULTR_API_KEY:-}
+      - VULTR_MODEL=meta/llama-3.3-70b-instruct
+      - VULTR_INFERENCE_URL=https://api.vultrinference.com/v1
+    restart: unless-stopped
