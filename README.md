@@ -18,29 +18,32 @@ AegisBox replaces unconstrained execution with a verified zero blast radius arch
 
 ```mermaid
 flowchart TD
-    User([User Web Console]) -->|Task Goal| API[FastAPI Control Plane on Vultr VM]
+    User([User Web Console]) -->|1. Submit Task Goal or Code| API[FastAPI Control Plane\nPort 8000]
     
-    subgraph VultrCloud["Vultr Cloud Infrastructure"]
-        API -->|Inference Request| VSI["Vultr Serverless Inference\napi.vultrinference.com/v1"]
-        VSI -->|Structured Plan + Code| API
-        
-        API -->|Sanitized Execution| Engine[AegisBox Sandbox Engine]
-        
-        subgraph Sandbox["Ephemeral Containment Sandbox"]
-            direction TB
-            Limits["Resource Caps: 5 Second Ceiling, Memory Bounds"]
-            Secrets["Secret Hygiene: Host Environment Filtered"]
-            CodeExec["Code Execution Runtime"]
-            Limits --- Secrets --- CodeExec
+    subgraph VultrCloud["Vultr Cloud Platform"]
+        subgraph VultrVM["Vultr Cloud Compute Host: 144.202.31.205"]
+            API -->|4. Dispatch Workload| Engine[AegisBox Sandbox Engine]
+            
+            subgraph Sandbox["Ephemeral Containment Sandbox"]
+                Guard["Runtime Security Guard\nSocket, Subprocess and Env Neutralization"]
+                Worker["Python 3 Guest Worker\n5s Watchdog Ceiling, Ephemeral Directory"]
+                Guard -->|6. Execute Sanitized Code| Worker
+            end
+            
+            Engine -->|5. Inject Security Preamble| Guard
+            Verifier[Cryptographic Receipt Verifier]
+            Worker -->|7. Stdout, Stderr and Exit Code| Verifier
+            Receipt[Deterministic SHA-256 Receipt]
+            Verifier -->|8. Mint Receipt Hash| Receipt
+            Receipt -->|9. Deliver Verified Audit| API
         end
         
-        Engine --> Sandbox
-        Sandbox -->|Stdout, Stderr, Exit Code| Verifier[Receipt Verifier]
-        Verifier -->|Deterministic Hash Generation| Receipt["Cryptographic Execution Receipt"]
+        VSI["Vultr Serverless Inference\napi.vultrinference.com/v1\nmeta/llama-3.3-70b-instruct"]
+        API -->|2. Request Execution Plan| VSI
+        VSI -->|3. Structured Python Workload| API
     end
     
-    Receipt --> API
-    API -->|Verified Audit and State| User
+    API -->|10. Return Verified Output and Telemetry| User
 ```
 
 ### Infrastructure Breakdown
